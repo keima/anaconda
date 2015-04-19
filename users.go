@@ -54,3 +54,21 @@ func (a TwitterApi) GetUserSearch(searchTerm string, v url.Values) (u []User, er
 	a.queryQueue <- query{BaseUrl + "/users/search.json", v, &u, _GET, response_ch}
 	return u, (<-response_ch).err
 }
+
+func (a TwitterApi) ReportSpamUser(screenName string, v url.Values) (user User, err error) {
+	v = cleanValues(v)
+	v.Set("screen_name", screenName)
+	return a.ReportSpam(v)
+}
+
+func (a TwitterApi) ReportSpamUserId(id int64, v url.Values) (user User, err error) {
+	v = cleanValues(v)
+	v.Set("user_id", strconv.FormatInt(id, 10))
+	return a.ReportSpam(v)
+}
+
+func (a TwitterApi) ReportSpam(v url.Values) (user User, err error) {
+	response_ch := make(chan response)
+	a.queryQueue <- query{BaseUrl + "/users/report_spam.json", v, &user, _POST, response_ch}
+	return user, (<-response_ch).err
+}
